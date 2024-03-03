@@ -1,13 +1,21 @@
-# Use the official Gradle image to create a build artifact.
-# This is multi-stage build. In the first stage, we build the JAR file.
-FROM gradle:7.4.1-jdk17 AS build
-WORKDIR /home/gradle/src
-COPY --chown=gradle:gradle . /home/gradle/src
-RUN gradle build --no-daemon
+FROM gradle:8.5.0-jdk17 AS builder
+WORKDIR /app
 
-# In the second stage, we setup the runtime environment and copy the JAR file from the build stage.
-FROM openjdk:17-slim
+# 그래들 파일이 변경되었을 때만 새롭게 의존패키지 다운로드 받게함.
+COPY build.gradle settings.gradle
+RUN gradle build -x test --parallel --continue > /dev/null 2>&1 || true
+
+# 빌더 이미지에서 애플리케이션 빌드
+COPY . .
+RUN gradle build -x test --parallel
+
+# APP
+FROM openjdk:17-jdk-slim
+WORKDIR /app
+
+# 빌더 이미지에서 jar 파일만 복사
+COPY --from=builder /app/build/libs/*.jar app.jar
+
 EXPOSE 8080
-RUN mkdir /app
-COPY --from=build /home/gradle/src/build/libs/*.jar /app/spring-boot-application.jar
-ENTRYPOINT ["java","-jar","/app/spring-boot-application.jar"]
+# 프로필 환경변수 사용 시!
+ENTRYPOINT ["java","-jar","app.jar"]
