@@ -33,10 +33,10 @@ jobs:
         run: ./gradlew build -x test
 
       - name: Build Docker image
-        run: docker build . -t ${{ secrets.DOCKER_USERNAME }}/$APP_NAME:${{ github.sha }}
+        run: docker build . -t ${{ secrets.DOCKER_USERNAME }}/${APP_NAME}:${{ github.sha }}
 
       - name: Log in to Docker registry
         run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login ${{ secrets.DOCKER_USERNAME }} -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
 
       - name: Push Docker image
-        run: docker push ${{ secrets.DOCKER_USERNAME }}/$APP_NAME:${{ github.sha }}
+        run: docker push ${{ secrets.DOCKER_USERNAME }}/${APP_NAME}:${{ github.sha }}
