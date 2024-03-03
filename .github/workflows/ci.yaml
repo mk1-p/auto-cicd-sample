@@ -25,7 +25,7 @@ jobs:
         run: docker build . -t ${{ vars.REGISTRY_USER }}/${{ vars.APP_NAME }}:${{ github.sha }}
 
       - name: Log in to Docker registry
-        run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker ${{ vars.REGISTRY_USER }} -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
+        run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login ${{ vars.REGISTRY_USER }} -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
 
       - name: Push Docker image
         run: docker push ${{ vars.REGISTRY_USER }}/${{ vars.APP_NAME }}:${{ github.sha }}
